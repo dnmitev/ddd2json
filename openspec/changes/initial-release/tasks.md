@@ -2,7 +2,7 @@
 
 - [x] 1.1 Add `.gitignore` (exclude `graphify-out/`, OS junk; keep `public/ddd_parser.wasm` optional — CI will rebuild)
 - [x] 1.2 Verify `go.sum` and executable `scripts/build-wasm.sh` are tracked
-- [ ] 1.3 Create initial commit with application source, specs, and build tooling
+- [x] 1.3 Create initial commit with application source, specs, and build tooling
 
 ## 2. AGPL Compliance
 
