@@ -148,11 +148,11 @@ export function aggregateActivityDurations(changes) {
 }
 
 export function storeReport(report) {
-  sessionStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(report));
+  localStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(report));
 }
 
 export function loadReport() {
-  const raw = sessionStorage.getItem(REPORT_STORAGE_KEY);
+  const raw = localStorage.getItem(REPORT_STORAGE_KEY);
   if (!raw) {
     return null;
   }
