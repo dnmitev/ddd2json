@@ -20,4 +20,4 @@
 
 - [x] 4.1 Generate report from real driver card `.DDD` and verify daily totals look reasonable
 - [x] 4.2 Generate report from real VU `.DDD` (regression) and print to PDF via browser
-- [ ] 4.3 Deploy to GitHub Pages and smoke-test print flow on live site
+- [x] 4.3 Deploy to GitHub Pages and smoke-test print flow on live site

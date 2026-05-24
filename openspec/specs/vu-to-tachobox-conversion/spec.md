@@ -41,15 +41,6 @@ The system SHALL map `vu_overview_1` and `vu_activities_1` fields from the parse
 - **WHEN** the parsed VU data has no `vu_activities_1` entries
 - **THEN** the system rejects conversion with an error stating no daily activity records were found
 
-### Requirement: Reject non-VU files for conversion
-
-The system SHALL NOT produce TachoBox JSON from driver card files in this release. Only VU mode results are accepted by the converter.
-
-#### Scenario: Driver card file rejected at conversion
-
-- **WHEN** the parser returns `mode: "card"` for the uploaded file
-- **THEN** the converter rejects the file with a message that only vehicle unit files are supported
-
 ### Requirement: Output file naming
 
 The system SHALL suggest an output filename derived from the input filename by replacing the extension with `.tachobox.json`.
@@ -61,10 +52,10 @@ The system SHALL suggest an output filename derived from the input filename by r
 
 ### Requirement: Conversion summary metadata
 
-The system SHALL compute a summary from the TachoBox JSON including registration plate, VIN, number of days, total activity count, and date period.
+The system SHALL compute a summary from the TachoBox JSON. For vehicle unit files the summary SHALL include registration plate, VIN, number of days, total activity count, and date period.
 
-#### Scenario: Summary after successful conversion
+#### Scenario: Summary after successful VU conversion
 
-- **WHEN** conversion completes successfully
+- **WHEN** a vehicle unit file converts successfully
 - **THEN** the UI displays plate, VIN, day count, activity count, and from/to dates derived from the output JSON
 

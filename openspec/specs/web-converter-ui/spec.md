@@ -35,10 +35,15 @@ The system SHALL allow users to select one `.DDD` file at a time via drag-and-dr
 
 The system SHALL convert the selected file when the user clicks "Конвертирай", show a busy state during processing, and display success or error status in Bulgarian.
 
-#### Scenario: Successful conversion
+#### Scenario: Successful VU conversion
 
-- **WHEN** the user clicks convert with a valid VU file loaded
-- **THEN** the status changes to "Готово. Свалете JSON файла и го качете в TachoBox." and download/TachoBox buttons become enabled
+- **WHEN** the user clicks convert with a valid vehicle unit file loaded
+- **THEN** the status confirms success in Bulgarian and download, TachoBox, and print/PDF buttons become enabled
+
+#### Scenario: Successful driver card conversion
+
+- **WHEN** the user clicks convert with a valid driver card file loaded
+- **THEN** the status confirms success in Bulgarian and download, TachoBox, and print/PDF buttons become enabled
 
 #### Scenario: Conversion in progress
 
@@ -85,4 +90,41 @@ The deployed site SHALL include a visible link to the project's public source re
 
 - **WHEN** the user views the deployed application
 - **THEN** a link to the GitHub repository source code is visible on the page
+
+### Requirement: File-type-aware conversion summary
+
+The summary panel SHALL adapt labels and values based on whether the converted file was a vehicle unit or driver card.
+
+#### Scenario: Driver card summary labels
+
+- **WHEN** a driver card file is converted successfully
+- **THEN** the summary shows driver name and card number fields instead of registration plate and VIN
+
+#### Scenario: Vehicle unit summary labels
+
+- **WHEN** a vehicle unit file is converted successfully
+- **THEN** the summary continues to show plate and VIN as today
+
+### Requirement: Print or PDF report action
+
+The system SHALL provide a „Печат / PDF“ button enabled after successful conversion, alongside existing download and TachoBox actions.
+
+#### Scenario: Print button after conversion
+
+- **WHEN** conversion completes successfully
+- **THEN** the print/PDF button is enabled
+
+#### Scenario: Print button before conversion
+
+- **WHEN** no successful conversion output exists
+- **THEN** the print/PDF button is disabled
+
+### Requirement: Report opens without leaving privacy model
+
+The report SHALL open in the same browser context (new tab or overlay) without uploading the file to any external service.
+
+#### Scenario: Local report preview
+
+- **WHEN** the user clicks „Печат / PDF“
+- **THEN** the printable report is shown using only data already in the browser session
 
