@@ -21,4 +21,4 @@
 
 - [ ] 4.1 End-to-end test: real `C_*.DDD` → download JSON → upload to TachoBox successfully
 - [x] 4.2 Confirm existing VU file flow still works (no regression)
-- [ ] 4.3 Deploy to GitHub Pages and smoke-test card conversion on the live site
+- [x] 4.3 Deploy to GitHub Pages and smoke-test card conversion on the live site
