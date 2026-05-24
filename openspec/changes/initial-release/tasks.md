@@ -18,5 +18,5 @@
 ## 4. Release Verification
 
 - [x] 4.1 Verify local build: `./scripts/build-wasm.sh` → serve `public/` → convert real VU `.DDD` → download JSON
-- [ ] 4.2 Verify deployed site: same file flow → upload JSON to TachoBox successfully
+- [x] 4.2 Verify deployed site: same file flow → upload JSON to TachoBox successfully
 - [x] 4.3 Smoke-test error paths: no file selected, driver card file rejected, parser-not-loaded message
