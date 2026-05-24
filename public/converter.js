@@ -5,6 +5,23 @@ const ACTIVITY_BY_WORK_TYPE = {
   3: "DRIVING",
 };
 
+/** EU tachograph NationNumeric → alpha (TachoBox uses short codes like "I", "E", "BG"). */
+const NATION_NUMERIC_TO_ALPHA = {
+  7: "BG",
+  15: "E",
+  19: "I",
+  21: "LT",
+  25: "NL",
+  27: "PL",
+  34: "RO",
+  36: "SK",
+  38: "S",
+  39: "CH",
+  40: "TR",
+  41: "GB",
+  255: "",
+};
+
 export function convertParseResultToTachobox(parseResult, fileName) {
   if (!parseResult || parseResult.error) {
     throw new Error(parseResult?.error || "Parser did not return data.");
@@ -71,7 +88,8 @@ export function convertVuToTachobox(data, fileName = "tachograph.DDD") {
 }
 
 /**
- * Driver card output uses the flespi/TachoBox DF_Tachograph shape (see scripts/fixtures/README.md).
+ * Driver card output matches TachoBox demo JSON: one `result` entry with
+ * `content.DF_Tachograph` and unix timestamps (see scripts/fixtures/README.md).
  */
 export function convertCardToTachobox(data, fileName = "driver.DDD") {
   const activityBlock = data?.card_driver_activity_1;
@@ -86,52 +104,130 @@ export function convertCardToTachobox(data, fileName = "driver.DDD") {
   const holder = identification.driver_card_holder_identification || {};
   const cardId = identification.card_identification || {};
   const holderName = holder.card_holder_name || {};
+  const cardNumber = cardId.card_number || "";
+  const region = memberStateAlpha(cardNumber, cardId.card_issuing_member_state);
 
   const activityDailyRecords = dailyRecords
     .filter((day) => (day.activity_change_info?.length || 0) > 0)
     .map((day) => ({
-      activityRecordDate: day.activity_record_date,
+      activityRecordDate: toUnix(day.activity_record_date),
       activityDayDistance: day.activity_day_distance || 0,
-      activityDailyPresenceCounter: day.activity_daily_presence_counter || 0,
       activityChangeInfo: (day.activity_change_info || []).map(convertCardActivityChange),
     }))
-    .sort((left, right) => toUnix(left.activityRecordDate) - toUnix(right.activityRecordDate));
+    .sort((left, right) => left.activityRecordDate - right.activityRecordDate);
 
   if (!activityDailyRecords.length) {
     throw new Error("Не са намерени дневни записи за активност в картата на водача.");
   }
 
-  return {
-    DF_Tachograph: {
-      EF_Identification: {
-        CardIdentification: {
-          cardIssuingMemberState: cardId.card_issuing_member_state ?? null,
-          cardNumber: cardId.card_number || "",
-          cardIssuingAuthorityName: cardId.card_issuing_authority_name || "",
-          cardIssueDate: cardId.card_issue_date || null,
-          cardValidityBegin: cardId.card_validity_begin || null,
-          cardExpiryDate: cardId.card_expiry_date || null,
-        },
-        DriverCardHolderIdentification: {
-          cardHolderName: {
-            holderSurname: holderName.holder_surname || "",
-            holderFirstNames: holderName.holder_first_names || "",
-          },
-          cardHolderBirthDate: holder.card_holder_birth_date || null,
-        },
+  const dfTachograph = {
+    EF_Identification: {
+      CardIdentification: {
+        cardIssuingMemberState: region,
+        cardNumber,
+        cardIssuingAuthorityName: cardId.card_issuing_authority_name || "",
+        cardIssueDate: toUnix(cardId.card_issue_date),
+        cardValidityBegin: toUnix(cardId.card_validity_begin),
+        cardExpiryDate: toUnix(cardId.card_expiry_date),
       },
-      EF_Driver_Activity_Data: {
-        CardDriverActivity: {
-          cardDownloadFileName: fileName,
-          activityDailyRecords,
+      DriverCardHolderIdentification: {
+        cardHolderName: {
+          holderSurname: holderName.holder_surname || "",
+          holderFirstNames: holderName.holder_first_names || "",
         },
+        cardHolderBirthDate: birthDateToUnix(holder.card_holder_birth_date),
+        cardHolderPreferredLanguage: holder.card_holder_preferred_language || undefined,
       },
     },
+    EF_Driver_Activity_Data: {
+      CardDriverActivity: {
+        activityDailyRecords,
+      },
+    },
+  };
+
+  const appId = data?.driver_card_application_identification_1;
+  if (appId?.type_of_tachograph_card_id != null) {
+    dfTachograph.EF_Application_Identification = {
+      DriverCardApplicationIdentification: {
+        typeOfTachographCardId: appId.type_of_tachograph_card_id,
+        cardStructureVersion: appId.card_structure_version?.[0] ?? 0,
+        noOfEventsPerType: appId.no_of_events_per_type ?? 0,
+        noOfFaultsPerType: appId.no_of_faults_per_type ?? 0,
+        activityStructureLength: appId.activity_structure_length ?? 0,
+        noOfCardVehicleRecords: appId.no_of_card_vehicle_records ?? 0,
+        noOfCardPlaceRecords: appId.no_of_card_place_records ?? 0,
+      },
+    };
+  }
+
+  const lastDownload = data?.last_card_download_1?.last_card_download;
+  if (lastDownload) {
+    dfTachograph.EF_Card_Download = {
+      LastCardDownload: toUnix(lastDownload),
+    };
+  }
+
+  const licence = data?.card_driving_licence_information_1;
+  if (licence?.driving_licence_number) {
+    dfTachograph.EF_Driving_Licence_Info = {
+      CardDrivingLicenceInformation: {
+        drivingLicenceNumber: licence.driving_licence_number,
+        drivingLicenceIssuingAuthority: licence.driving_licence_issuing_authority || "",
+        drivingLicenceIssuingNation: memberStateAlpha(
+          "",
+          licence.driving_licence_issuing_nation,
+        ),
+      },
+    };
+  }
+
+  const currentUse = data?.card_current_use_1;
+  const currentVehicle = currentUse?.session_open_vehicle;
+  if (currentUse?.session_open_time || currentVehicle?.vehicle_registration_number) {
+    dfTachograph.EF_Current_Usage = {
+      CardCurrentUse: {
+        sessionOpenTime: toUnix(currentUse.session_open_time),
+        sessionOpenVehicle: {
+          vehicleRegistrationNation: memberStateAlpha(
+            "",
+            currentVehicle?.vehicle_registration_nation,
+          ),
+          vehicleRegistrationNumber: currentVehicle?.vehicle_registration_number || "",
+        },
+      },
+    };
+  }
+
+  const firstNames = holderName.holder_first_names || "";
+  const surname = holderName.holder_surname || "";
+  const currentPlate =
+    dfTachograph.EF_Current_Usage?.CardCurrentUse?.sessionOpenVehicle
+      ?.vehicleRegistrationNumber || "";
+
+  return {
+    result: [
+      {
+        uuid: `${fileName}:card`,
+        name: fileName,
+        meta: {
+          driver_first_name: firstNames,
+          driver_last_name: surname,
+          driver_id: cardNumber,
+          plate_number: currentPlate,
+          region,
+          type: "tacho",
+        },
+        content: {
+          DF_Tachograph: dfTachograph,
+        },
+      },
+    ],
   };
 }
 
 export function summarizeTachobox(tachoboxJson) {
-  if (tachoboxJson?.DF_Tachograph) {
+  if (tachoboxJson?.result?.[0]?.content?.DF_Tachograph) {
     return summarizeCardTachobox(tachoboxJson);
   }
 
@@ -161,20 +257,18 @@ function summarizeVuTachobox(tachoboxJson) {
 }
 
 function summarizeCardTachobox(tachoboxJson) {
-  const identification = tachoboxJson.DF_Tachograph?.EF_Identification || {};
-  const cardId = identification.CardIdentification || {};
-  const holder = identification.DriverCardHolderIdentification || {};
-  const holderName = holder.cardHolderName || {};
+  const entry = tachoboxJson.result[0];
+  const meta = entry.meta || {};
+  const df = entry.content?.DF_Tachograph || {};
   const records =
-    tachoboxJson.DF_Tachograph?.EF_Driver_Activity_Data?.CardDriverActivity
-      ?.activityDailyRecords || [];
+    df.EF_Driver_Activity_Data?.CardDriverActivity?.activityDailyRecords || [];
 
   const activityCount = records.reduce(
     (count, day) => count + (day.activityChangeInfo?.length || 0),
     0,
   );
 
-  const driverName = [holderName.holderFirstNames, holderName.holderSurname]
+  const driverName = [meta.driver_first_name, meta.driver_last_name]
     .filter(Boolean)
     .join(" ")
     .trim();
@@ -182,7 +276,7 @@ function summarizeCardTachobox(tachoboxJson) {
   return {
     kind: "card",
     driverName: driverName || "-",
-    cardNumber: cardId.cardNumber || "-",
+    cardNumber: meta.driver_id || "-",
     days: records.length,
     activities: activityCount,
     from: formatDate(records[0]?.activityRecordDate),
@@ -207,13 +301,11 @@ function convertActivity(activity) {
 
 function convertCardActivityChange(activity) {
   return {
-    driver: Boolean(activity.driver),
-    team: Boolean(activity.team),
-    cardPresent: Boolean(activity.card_present),
-    workType: activity.work_type ?? 0,
     activity: ACTIVITY_BY_WORK_TYPE[activity.work_type] || "BREAK/REST",
-    minutes: activity.minutes || 0,
+    cardInserted: Boolean(activity.card_present),
     changeTime: activity.minutes || 0,
+    drivingStatus: activity.team ? "CREW" : "SINGLE",
+    slot: activity.driver ? "DRIVER" : "CO-DRIVER",
   };
 }
 
@@ -227,6 +319,25 @@ function convertDownloadActivity(record) {
     fullCardNumber: record.full_card_number || null,
     companyOrWorkshopName: record.company_or_workshop_name || "",
   };
+}
+
+function memberStateAlpha(cardNumber, numericState) {
+  if (typeof cardNumber === "string" && cardNumber.length >= 2) {
+    if (cardNumber.startsWith("BG")) {
+      return "BG";
+    }
+    if (/^[A-Z]/.test(cardNumber)) {
+      return cardNumber[0];
+    }
+  }
+  return NATION_NUMERIC_TO_ALPHA[numericState] ?? "";
+}
+
+function birthDateToUnix(birthDate) {
+  if (!birthDate?.year) {
+    return 0;
+  }
+  return Math.floor(Date.UTC(birthDate.year, (birthDate.month || 1) - 1, birthDate.day || 1) / 1000);
 }
 
 function toUnix(value) {

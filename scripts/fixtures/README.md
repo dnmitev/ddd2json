@@ -1,44 +1,55 @@
 # Converter fixtures
 
-## Driver card target shape (`DF_Tachograph`)
+## Driver card target shape (TachoBox demo)
 
-TachoBox expects driver card JSON in the [flespi tacho-file-parse](https://flespi.com/kb/tacho-file-parse-plugin) hierarchy, not the `{ "result": [...] }` wrapper used for vehicle unit daily exports.
+TachoBox expects the **same top-level wrapper as its demo download**, not a bare `DF_Tachograph` root:
 
 ```json
 {
-  "DF_Tachograph": {
-    "EF_Identification": {
-      "CardIdentification": { "cardNumber": "…" },
-      "DriverCardHolderIdentification": {
-        "cardHolderName": {
-          "holderSurname": "…",
-          "holderFirstNames": "…"
+  "result": [
+    {
+      "uuid": "…",
+      "name": "C_….DDD",
+      "meta": {
+        "driver_first_name": "…",
+        "driver_last_name": "…",
+        "driver_id": "…",
+        "plate_number": "",
+        "region": "E",
+        "type": "tacho"
+      },
+      "content": {
+        "DF_Tachograph": {
+          "EF_Identification": { … },
+          "EF_Driver_Activity_Data": {
+            "CardDriverActivity": {
+              "activityDailyRecords": [
+                {
+                  "activityRecordDate": 1764547200,
+                  "activityDayDistance": 510,
+                  "activityChangeInfo": [
+                    {
+                      "activity": "DRIVING",
+                      "cardInserted": true,
+                      "changeTime": 348,
+                      "drivingStatus": "SINGLE",
+                      "slot": "DRIVER"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         }
       }
-    },
-    "EF_Driver_Activity_Data": {
-      "CardDriverActivity": {
-        "activityDailyRecords": [
-          {
-            "activityRecordDate": "2026-05-14T00:00:00Z",
-            "activityDayDistance": 75,
-            "activityChangeInfo": [
-              {
-                "workType": 3,
-                "minutes": 471,
-                "activity": "DRIVING"
-              }
-            ]
-          }
-        ]
-      }
     }
-  }
+  ]
 }
 ```
 
-## Spike notes
+Key differences from raw tachoparser JSON:
 
-- Raw tachoparser card JSON uses `card_driver_activity_1.decoded_activity_daily_records` (not the binary `activity_daily_records` field).
-- Vehicle unit files continue to use `{ "result": [...] }` with `content.ActivityChangeInfo`.
-- Confirm TachoBox import with a real `C_*.DDD` after conversion (task 4.1).
+- One `result` entry per card (all days inside `activityDailyRecords`)
+- Dates as **unix seconds**, not ISO strings
+- `activityChangeInfo` uses `slot`, `drivingStatus`, `cardInserted` (not `workType` / `minutes` alone)
+- Vehicle unit files still use per-day `result[]` with `content.ActivityChangeInfo`

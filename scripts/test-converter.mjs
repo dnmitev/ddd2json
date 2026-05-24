@@ -13,12 +13,21 @@ const cardFixture = JSON.parse(
 );
 
 const cardJson = convertParseResultToTachobox(cardFixture, "C_redacted.DDD");
-assert.ok(cardJson.DF_Tachograph, "card output uses DF_Tachograph");
+assert.ok(cardJson.result?.[0]?.content?.DF_Tachograph, "card output uses result wrapper");
+assert.equal(cardJson.result.length, 1, "card uses one result entry");
 assert.ok(
-  cardJson.DF_Tachograph.EF_Driver_Activity_Data.CardDriverActivity.activityDailyRecords
-    .length === 2,
+  cardJson.result[0].content.DF_Tachograph.EF_Driver_Activity_Data.CardDriverActivity
+    .activityDailyRecords.length === 2,
   "card fixture has two activity days",
 );
+
+const day =
+  cardJson.result[0].content.DF_Tachograph.EF_Driver_Activity_Data.CardDriverActivity
+    .activityDailyRecords[0];
+assert.equal(typeof day.activityRecordDate, "number", "activity dates are unix seconds");
+assert.equal(day.activityChangeInfo[0].slot, "DRIVER");
+assert.equal(day.activityChangeInfo[0].drivingStatus, "SINGLE");
+assert.equal(day.activityChangeInfo[0].cardInserted, true);
 
 const cardSummary = summarizeTachobox(cardJson);
 assert.equal(cardSummary.kind, "card");
