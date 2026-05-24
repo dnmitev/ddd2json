@@ -1,0 +1,6 @@
+graphify-out/
+.DS_Store
+Thumbs.db
+
+# Built in CI or locally via scripts/build-wasm.sh
+public/ddd_parser.wasm

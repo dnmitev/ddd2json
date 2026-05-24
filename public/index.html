@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DDD към TachoBox JSON</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="tool" aria-labelledby="page-title">
+        <div class="header">
+          <div>
+            <p class="eyebrow">DDD converter</p>
+            <h1 id="page-title">DDD към TachoBox JSON</h1>
+          </div>
+          <span class="privacy">Локално в браузъра</span>
+        </div>
+
+        <div class="dropzone" data-dropzone>
+          <input
+            data-file-input
+            class="file-input"
+            type="file"
+            accept=".ddd,.DDD,.v1b,.V1B,.c1b,.C1B,.tgd,.TGD"
+          />
+          <div class="file-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <path d="M14 2v6h6" />
+              <path d="M8 15h8" />
+              <path d="M8 18h5" />
+            </svg>
+          </div>
+          <div class="file-copy">
+            <strong data-file-name>Няма избран файл</strong>
+            <span data-file-meta>Пуснете файла тук или го изберете.</span>
+          </div>
+          <button class="button secondary" data-choose-file type="button">Избери файл</button>
+        </div>
+
+        <div class="actions">
+          <button class="button primary" data-convert type="button" disabled>
+            <span class="idle-label">Конвертирай</span>
+            <span class="busy-label">Моля, изчакайте...</span>
+          </button>
+          <button class="button secondary" data-download type="button" disabled>Свали JSON</button>
+          <button class="button ghost" data-open-tachobox type="button" disabled>Отвори TachoBox</button>
+        </div>
+
+        <p class="status" data-status data-tone="idle">Изберете DDD файл.</p>
+
+        <section class="summary" data-summary hidden aria-label="Резюме">
+          <div>
+            <span>Рег. номер</span>
+            <strong data-summary-field="plate">-</strong>
+          </div>
+          <div>
+            <span>VIN</span>
+            <strong data-summary-field="vin">-</strong>
+          </div>
+          <div>
+            <span>Дни</span>
+            <strong data-summary-field="days">-</strong>
+          </div>
+          <div>
+            <span>Активности</span>
+            <strong data-summary-field="activities">-</strong>
+          </div>
+          <div class="wide">
+            <span>Период</span>
+            <strong data-summary-field="period">-</strong>
+          </div>
+        </section>
+
+        <p class="source-link">
+          <a href="https://github.com/dnmitev/ddd2json" rel="noopener noreferrer">
+            Изходен код (AGPL)
+          </a>
+        </p>
+      </section>
+    </main>
+
+    <script src="./wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(fetch("./ddd_parser.wasm"), go.importObject).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
+
