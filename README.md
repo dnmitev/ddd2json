@@ -45,6 +45,16 @@ http://localhost:4173
 node scripts/test-converter.mjs
 ```
 
+### Print / PDF report
+
+After converting a `.DDD` file, click **Печат / PDF** to open a printable summary with daily driving, work, rest, and availability totals. Use the browser print dialog (**Save as PDF**) to export. The report is generated from the raw parse result and is for information only — it does not include EU 561/2006 compliance checks.
+
+### Report tests
+
+```sh
+node scripts/test-report.mjs
+```
+
 ### Export parser JSON from a card file (development)
 
 ```sh

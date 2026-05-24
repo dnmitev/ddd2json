@@ -3,6 +3,7 @@ import {
   summarizeTachobox,
   suggestOutputName,
 } from "./converter.js";
+import { buildReport, storeReport } from "./report.js";
 
 const TACHOBOX_URL = "https://tachobox.flespi.io/#/";
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
@@ -20,6 +21,7 @@ const elements = {
   convertButton: document.querySelector("[data-convert]"),
   downloadButton: document.querySelector("[data-download]"),
   openTachobox: document.querySelector("[data-open-tachobox]"),
+  printReport: document.querySelector("[data-print-report]"),
   fileName: document.querySelector("[data-file-name]"),
   fileMeta: document.querySelector("[data-file-meta]"),
   status: document.querySelector("[data-status]"),
@@ -39,6 +41,9 @@ function bootstrap() {
   elements.downloadButton.addEventListener("click", downloadCurrentJson);
   elements.openTachobox.addEventListener("click", () => {
     window.open(TACHOBOX_URL, "_blank", "noopener,noreferrer");
+  });
+  elements.printReport.addEventListener("click", () => {
+    window.open("./report.html", "_blank", "noopener,noreferrer");
   });
 
   elements.dropzone.addEventListener("dragover", (event) => {
@@ -101,9 +106,11 @@ async function convertCurrentFile() {
     state.outputText = `${JSON.stringify(tachoboxJson, null, 2)}\n`;
 
     renderSummary(summarizeTachobox(tachoboxJson));
+    storeReport(buildReport(parseResult, state.file.name));
     setStatus("Готово. Свалете JSON файла и го качете в TachoBox.", "success");
     elements.downloadButton.disabled = false;
     elements.openTachobox.disabled = false;
+    elements.printReport.disabled = false;
   } catch (error) {
     setStatus(error.message || "Неуспешно конвертиране.", "error");
   } finally {
@@ -173,6 +180,7 @@ function resetOutput() {
   elements.summary.hidden = true;
   elements.downloadButton.disabled = true;
   elements.openTachobox.disabled = true;
+  elements.printReport.disabled = true;
 }
 
 function setBusy(isBusy) {

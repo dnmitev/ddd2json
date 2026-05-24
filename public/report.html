@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Справка</title>
+    <link rel="stylesheet" href="./report.css" />
+  </head>
+  <body>
+    <div class="report-toolbar no-print">
+      <a class="report-back" href="./index.html">← Назад</a>
+      <button class="report-print" data-print-report type="button">Печат / PDF</button>
+    </div>
+
+    <main class="report-page">
+      <p class="report-empty" data-report-empty hidden>
+        Няма заредена справка. Конвертирайте DDD файл от началната страница и натиснете „Печат / PDF“.
+      </p>
+      <article data-report-root hidden></article>
+    </main>
+
+    <script type="module" src="./report-view.js"></script>
+  </body>
+</html>
