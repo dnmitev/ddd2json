@@ -33,9 +33,24 @@ http://localhost:4173
 
 ## Current Scope
 
-- Supported: 1st-generation vehicle unit DDD files.
-- Not yet supported: 2nd-generation VU files, driver card conversion to the TachoBox JSON shape.
+- Supported: 1st-generation vehicle unit DDD files (`M_*`, `V_*`) and driver card files (`C_*`).
+- Vehicle unit output uses a `{ "result": [...] }` daily-record wrapper validated with TachoBox.
+- Driver card output uses the `DF_Tachograph` JSON hierarchy expected by [TachoBox / flespi tacho-file-parse](https://flespi.com/kb/tacho-file-parse-plugin).
+- Not yet supported: 2nd-generation-only fields for VU or driver cards.
 - Files are processed locally in the browser.
+
+### Converter tests
+
+```sh
+node scripts/test-converter.mjs
+```
+
+### Export parser JSON from a card file (development)
+
+```sh
+chmod +x scripts/export-card-parse.sh
+./scripts/export-card-parse.sh /path/to/C_file.DDD
+```
 
 ## Deployment (GitHub Pages)
 

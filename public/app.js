@@ -25,6 +25,7 @@ const elements = {
   status: document.querySelector("[data-status]"),
   summary: document.querySelector("[data-summary]"),
   summaryFields: document.querySelectorAll("[data-summary-field]"),
+  summaryLabels: document.querySelectorAll("[data-summary-label]"),
 };
 
 bootstrap();
@@ -134,13 +135,31 @@ async function ensureParserLoaded() {
 }
 
 function renderSummary(summary) {
-  const fields = {
-    plate: summary.plate,
-    vin: summary.vin,
-    days: String(summary.days),
-    activities: String(summary.activities),
-    period: `${summary.from} - ${summary.to}`,
-  };
+  const labels =
+    summary.kind === "card"
+      ? { primary: "Водач", secondary: "Номер на карта" }
+      : { primary: "Рег. номер", secondary: "VIN" };
+
+  for (const label of elements.summaryLabels) {
+    label.textContent = labels[label.dataset.summaryLabel] || label.textContent;
+  }
+
+  const fields =
+    summary.kind === "card"
+      ? {
+          primary: summary.driverName,
+          secondary: summary.cardNumber,
+          days: String(summary.days),
+          activities: String(summary.activities),
+          period: `${summary.from} - ${summary.to}`,
+        }
+      : {
+          primary: summary.plate,
+          secondary: summary.vin,
+          days: String(summary.days),
+          activities: String(summary.activities),
+          period: `${summary.from} - ${summary.to}`,
+        };
 
   for (const field of elements.summaryFields) {
     field.textContent = fields[field.dataset.summaryField] || "-";

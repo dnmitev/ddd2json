@@ -1,0 +1,66 @@
+{
+  "mode": "card",
+  "verified": false,
+  "data": {
+    "card_identification_and_driver_card_holder_identification_1": {
+      "card_identification": {
+        "card_issuing_member_state": 15,
+        "card_number": "EX0000000Z000000",
+        "card_issuing_authority_name": "EXAMPLE AUTHORITY",
+        "card_issue_date": "2021-12-29T00:00:01Z",
+        "card_validity_begin": "2022-01-29T00:00:01Z",
+        "card_expiry_date": "2027-01-29T00:00:01Z"
+      },
+      "driver_card_holder_identification": {
+        "card_holder_name": {
+          "holder_surname": "SURNAME",
+          "holder_first_names": "GIVEN NAMES"
+        },
+        "card_holder_birth_date": {
+          "year": 1976,
+          "month": 5,
+          "day": 17
+        }
+      }
+    },
+    "card_driver_activity_1": {
+      "decoded_activity_daily_records": [
+        {
+          "activity_record_date": "2026-05-14T00:00:00Z",
+          "activity_day_distance": 75,
+          "activity_daily_presence_counter": 963,
+          "activity_change_info": [
+            {
+              "driver": true,
+              "team": false,
+              "card_present": true,
+              "work_type": 0,
+              "minutes": 0
+            },
+            {
+              "driver": true,
+              "team": false,
+              "card_present": true,
+              "work_type": 3,
+              "minutes": 471
+            }
+          ]
+        },
+        {
+          "activity_record_date": "2026-05-13T00:00:00Z",
+          "activity_day_distance": 120,
+          "activity_daily_presence_counter": 962,
+          "activity_change_info": [
+            {
+              "driver": true,
+              "team": false,
+              "card_present": true,
+              "work_type": 3,
+              "minutes": 300
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
